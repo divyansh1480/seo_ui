@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://15.206.125.175:3000';
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
+const authHeaders = { 'Content-Type': 'application/json', 'x-api-key': API_KEY };
 
 interface Category { id: number; name: string; slug: string; level: string; }
 interface Block { category_id: number; category_slug: string; name: string; level: string; updated_at: string; }
@@ -99,7 +101,7 @@ export default function AdminPLP() {
     try {
       const res = await fetch(`${API}/api/plp/${selectedId}`, {
         method: mode === 'exists' ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({ markdown_content: markdown }),
       });
       const data = await res.json();
@@ -115,7 +117,7 @@ export default function AdminPLP() {
 
   async function deleteBlock() {
     if (!selectedId || !confirm(`Delete SEO block for "${selectedSlug}"?`)) return;
-    const res = await fetch(`${API}/api/plp/${selectedId}`, { method: 'DELETE' });
+    const res = await fetch(`${API}/api/plp/${selectedId}`, { method: 'DELETE', headers: authHeaders });
     const data = await res.json();
     if (!data.ok) { showToast('Delete failed: ' + data.error, 'error'); return; }
     resetEditor(); showToast('Deleted'); loadBlocks();
