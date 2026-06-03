@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
+import * as cookie from 'cookie';
+
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://15.206.125.175:3000';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
@@ -8,7 +12,13 @@ interface Category { id: number; name: string; slug: string; level: string; }
 interface Block { category_id: number; category_slug: string; name: string; level: string; updated_at: string; }
 
 export default function AdminPLP() {
+  const router = useRouter();
   const [l0List, setL0List] = useState<Category[]>([]);
+
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    router.push('/login');
+  }
   const [l1List, setL1List] = useState<Category[]>([]);
   const [l2List, setL2List] = useState<Category[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -141,9 +151,14 @@ export default function AdminPLP() {
       `}</style>
 
       {/* Header */}
-      <div style={{ background: '#1a1a2e', color: '#fff', padding: '16px 32px' }}>
-        <div style={{ fontSize: 18, fontWeight: 700 }}>PLP SEO Content Manager</div>
-        <div style={{ fontSize: 13, opacity: 0.6 }}>Category-wise markdown blocks</div>
+      <div style={{ background: '#1a1a2e', color: '#fff', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>PLP SEO Content Manager</div>
+          <div style={{ fontSize: 13, opacity: 0.6 }}>Category-wise markdown blocks</div>
+        </div>
+        <button onClick={logout} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Logout
+        </button>
       </div>
 
       <div style={{ maxWidth: 1300, margin: '28px auto', padding: '0 24px' }}>
@@ -253,6 +268,14 @@ export default function AdminPLP() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const cookies = cookie.parse(req.headers.cookie || '');
+  if (cookies.seo_auth !== process.env.SESSION_SECRET) {
+    return { redirect: { destination: '/login', permanent: false } };
+  }
+  return { props: {} };
+};
 
 const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 };
 const selectStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1.5px solid #dde1e9', borderRadius: 7, fontSize: 14, background: '#fff', outline: 'none', cursor: 'pointer' };
