@@ -4,9 +4,8 @@ import { GetServerSideProps } from 'next';
 import * as cookie from 'cookie';
 
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://15.206.125.175:3000';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
-const authHeaders = { 'Content-Type': 'application/json', 'x-api-key': API_KEY };
+const API = '/api/proxy';
+const authHeaders = { 'Content-Type': 'application/json' };
 
 interface Category { id: number; name: string; slug: string; level: string; }
 interface Block { category_id: number; category_slug: string; name: string; level: string; updated_at: string; }
@@ -46,13 +45,13 @@ export default function AdminPLP() {
   }
 
   async function loadL0() {
-    const res = await fetch(`${API}/api/categories/l0`);
+    const res = await fetch(`${API}/categories/l0`);
     const data = await res.json();
     setL0List(data.categories || []);
   }
 
   async function loadBlocks() {
-    const res = await fetch(`${API}/api/plp`);
+    const res = await fetch(`${API}/plp`);
     const data = await res.json();
     setBlocks(data.blocks || []);
   }
@@ -64,7 +63,7 @@ export default function AdminPLP() {
     if (!id) return;
     const cat = l0List.find(c => c.id === id);
     await selectCategory(id, cat?.slug || '', 'L0', name);
-    const res = await fetch(`${API}/api/categories/${id}/children`);
+    const res = await fetch(`${API}/categories/${id}/children`);
     const data = await res.json();
     setL1List(data.categories || []);
   }
@@ -75,7 +74,7 @@ export default function AdminPLP() {
     setL2List([]); resetEditor();
     if (!id) return;
     await selectCategory(id, opt.dataset.slug || '', 'L1', opt.text);
-    const res = await fetch(`${API}/api/categories/${id}/children`);
+    const res = await fetch(`${API}/categories/${id}/children`);
     const data = await res.json();
     setL2List(data.categories || []);
   }
@@ -90,7 +89,7 @@ export default function AdminPLP() {
 
   async function selectCategory(id: number, slug: string, level: string, name: string) {
     setSelectedId(id); setSelectedSlug(slug); setSelectedLevel(level); setSelectedName(name);
-    const res = await fetch(`${API}/api/plp/${id}`);
+    const res = await fetch(`${API}/plp/${id}`);
     if (res.ok) {
       const data = await res.json();
       setMode('exists'); setMarkdown(data.markdown);
@@ -109,7 +108,7 @@ export default function AdminPLP() {
     if (!selectedId || !markdown.trim()) { showToast('Content cannot be empty', 'error'); return; }
     setSaving(true);
     try {
-      const res = await fetch(`${API}/api/plp/${selectedId}`, {
+      const res = await fetch(`${API}/plp/${selectedId}`, {
         method: mode === 'exists' ? 'PATCH' : 'POST',
         headers: authHeaders,
         body: JSON.stringify({ markdown_content: markdown }),
@@ -127,7 +126,7 @@ export default function AdminPLP() {
 
   async function deleteBlock() {
     if (!selectedId || !confirm(`Delete SEO block for "${selectedSlug}"?`)) return;
-    const res = await fetch(`${API}/api/plp/${selectedId}`, { method: 'DELETE', headers: authHeaders });
+    const res = await fetch(`${API}/plp/${selectedId}`, { method: 'DELETE', headers: authHeaders });
     const data = await res.json();
     if (!data.ok) { showToast('Delete failed: ' + data.error, 'error'); return; }
     resetEditor(); showToast('Deleted'); loadBlocks();
