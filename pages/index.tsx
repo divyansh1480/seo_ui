@@ -244,7 +244,12 @@ export default function AdminPLP() {
           {blocks.length === 0
             ? <div style={{ padding: 32, textAlign: 'center', color: '#bbb', fontSize: 14 }}>No SEO blocks added yet.</div>
             : blocks.map(b => (
-              <div key={b.category_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 20px', borderBottom: '1px solid #f7f7fa' }}>
+              <div key={b.category_id}
+                onClick={() => selectCategory(b.category_id, b.category_slug, b.level, b.name)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 20px', borderBottom: '1px solid #f7f7fa', cursor: 'pointer', background: selectedId === b.category_id ? '#f0f0fd' : 'transparent', transition: 'background 0.15s' }}
+                onMouseEnter={e => { if (selectedId !== b.category_id) (e.currentTarget as HTMLDivElement).style.background = '#f7f7fa'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = selectedId === b.category_id ? '#f0f0fd' : 'transparent'; }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: lvlBg[b.level], color: lvlColor[b.level] }}>{b.level}</span>
                   <div>
